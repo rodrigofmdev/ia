@@ -1,0 +1,16 @@
+pedido,data,categoria,regiao,valor,status
+P001,2026-10-01,Bebidas,Sul,120.50,Entregue
+P002,2026-10-01,Eletrônicos,Sudeste,890.00,Entregue
+P003,2026-10-02,Casa,Sul,230.00,Cancelado
+P004,2026-10-02,Bebidas,Nordeste,75.90,Entregue
+P005,2026-10-03,Eletrônicos,Sul,1250.00,Em transporte
+P006,2026-10-03,Casa,Sudeste,340.00,Entregue
+P007,2026-10-04,Bebidas,Sul,98.00,Cancelado
+P008,2026-10-04,Casa,Nordeste,410.00,Entregue
+P009,2026-10-05,Eletrônicos,Sudeste,760.00,Entregue
+P010,2026-10-05,Bebidas,Sul,145.00,Em transporte
+P011,2026-10-06,Casa,Sul,520.00,Entregue
+P012,2026-10-06,Eletrônicos,Nordeste,640.00,Cancelado
+P013,2026-10-07,Bebidas,Sudeste,110.00,Entregue
+P014,2026-10-07,Casa,Sul,285.00,Entregue
+P015,2026-10-08,Eletrônicos,Sul,980.00,Em transporte

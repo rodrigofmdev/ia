@@ -1,0 +1,23 @@
+[
+  {
+    "id": "1001",
+    "cliente": "Ana",
+    "status": "Entregue",
+    "previsao": "2026-11-12",
+    "valor": 149.9
+  },
+  {
+    "id": "1002",
+    "cliente": "Bruno",
+    "status": "Em transporte",
+    "previsao": "2026-11-18",
+    "valor": 329.0
+  },
+  {
+    "id": "1003",
+    "cliente": "Carla",
+    "status": "Preparando para envio",
+    "previsao": "2026-11-20",
+    "valor": 89.5
+  }
+]

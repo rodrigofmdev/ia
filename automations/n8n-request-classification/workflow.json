@@ -1,0 +1,231 @@
+{
+  "name": "Project 04 - AI Request Classification",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Customer Support Request",
+        "formDescription": "Submit a request to classify and record it.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Customer name",
+              "fieldName": "customer_name",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Request",
+              "fieldName": "request",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {
+          "path": "customer-support-request"
+        }
+      },
+      "id": "33c9d6c6-31f5-4db4-b3bc-b0cda0f1b1a1",
+      "name": "Request Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.openai.com/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { model: 'gpt-4o-mini', response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'Classifique solicitações de atendimento em português do Brasil. Retorne somente JSON com as chaves category, priority, responsible_team e rationale. Use categorias Pagamento, Entrega, Produto, Problema técnico, Documentação ou Outro. Use prioridade Alta, Média ou Baixa. Não invente informações.' }, { role: 'user', content: $json.request } ], temperature: 0.1 } }}",
+        "options": {}
+      },
+      "id": "a9b88c9d-f712-4414-9f31-57e44cb26f71",
+      "name": "Classify Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        500,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "const form = $('Request Form').item.json;\nconst response = $input.item.json;\nconst content = response.choices?.[0]?.message?.content;\n\nif (typeof content !== 'string') {\n  throw new Error('The AI response did not contain a message.');\n}\n\nlet classification;\ntry {\n  classification = JSON.parse(content);\n} catch (error) {\n  throw new Error('The AI response was not valid JSON.');\n}\n\nconst requiredFields = ['category', 'priority', 'responsible_team', 'rationale'];\nfor (const field of requiredFields) {\n  if (typeof classification[field] !== 'string' || !classification[field].trim()) {\n    throw new Error(`The AI response is missing a valid ${field} field.`);\n  }\n}\n\nif (!['Alta', 'Média', 'Baixa'].includes(classification.priority)) {\n  throw new Error('The AI returned an unsupported priority.');\n}\n\nreturn {\n  json: {\n    created_at: new Date().toISOString(),\n    customer_name: form.customer_name,\n    request: form.request,\n    category: classification.category,\n    priority: classification.priority,\n    responsible_team: classification.responsible_team,\n    rationale: classification.rationale,\n  },\n};"
+      },
+      "id": "6e3df5df-16ed-4bd9-a33f-d5fdc69a590b",
+      "name": "Validate Classification",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "sheet",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "REPLACE_WITH_SPREADSHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Requests",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "created_at": "={{ $json.created_at }}",
+            "customer_name": "={{ $json.customer_name }}",
+            "request": "={{ $json.request }}",
+            "category": "={{ $json.category }}",
+            "priority": "={{ $json.priority }}",
+            "responsible_team": "={{ $json.responsible_team }}",
+            "rationale": "={{ $json.rationale }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "request",
+              "displayName": "request",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "category",
+              "displayName": "category",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "priority",
+              "displayName": "priority",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "responsible_team",
+              "displayName": "responsible_team",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rationale",
+              "displayName": "rationale",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "8fac7388-5c66-4d34-a435-e2388843ba73",
+      "name": "Append to Google Sheets",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1020,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Request Form": {
+      "main": [
+        [
+          {
+            "node": "Classify Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Request": {
+      "main": [
+        [
+          {
+            "node": "Validate Classification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Classification": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "166947cf-3f53-4d41-bb69-30b786ad4f7f",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "pinData": {},
+  "tags": []
+}
